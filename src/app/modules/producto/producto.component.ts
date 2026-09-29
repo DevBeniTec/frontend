@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, inject, OnInit } from '@angular/core';
 import { HeaderComponent } from '../../components/header/header.component';
 import { TableModule } from 'primeng/table'
 import { ButtonModule } from 'primeng/button'
@@ -11,6 +11,9 @@ import { DropdownModule } from 'primeng/dropdown'
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, RouterLink } from '@angular/router';
+import { ConfirmationService, MessageService } from 'primeng/api';
+import { ProductoService } from './service/producto.service';
+import { CategoriaService } from '../categorias/service/categoria.service';
 
 /*
  * =====================================================================
@@ -45,7 +48,7 @@ import { ActivatedRoute, RouterLink } from '@angular/router';
 /* Pendiente: la imagen del producto (imageUrl) se ha dejado fuera de momento.
    No esta descartada; si se retoma hay que anadirla en los tres componentes
    (producto, categorias y detalle-producto) y en el modelo del backend. */
-interface Producto {
+export interface Producto {
     id: number;
     name: string;
     description: string;
@@ -59,7 +62,7 @@ interface Producto {
 }
 
 /* Lo que se puede elegir en el desplegable de categoria del formulario. */
-interface Categoria {
+export interface Categoria {
     id: number;
     name: string;
 }
@@ -93,6 +96,7 @@ interface FormularioProducto {
     RouterLink,
     HeaderComponent
   ],
+  providers: [ConfirmationService, MessageService],
   templateUrl: './producto.component.html',
   styleUrl: './producto.component.css'
 })
@@ -116,12 +120,7 @@ export class ProductoComponent implements OnInit {
      *   algo que ofrecer.  Cuando exista el servicio hay que traerlas de
      *   GET /api/categories (son las mismas que pinta categorias.component).
      */
-    categorias: Categoria[] = [
-        { id: 1, name: 'Smartphones' },
-        { id: 2, name: 'Ordenadores' },
-        { id: 3, name: 'Auriculares' },
-        { id: 4, name: 'Smartwatches' }
-    ];
+    categorias: Categoria[] = [];
 
     // TODO 4.3 - Indicador de carga: una propiedad "cargando" que se pone a
     //   true antes de suscribirse y a false en el next Y en el error; se ata
@@ -136,87 +135,51 @@ export class ProductoComponent implements OnInit {
      *       llamado desde ngOnInit.
      *   La interfaz Producto de arriba ya coincide con lo que devuelve la API.
      */
-    productos: Producto[] = [
-        {
-            id: 1,
-            name: 'iPhone 15',
-            description: 'Smartphone de Apple Super Retina XDR',
-            price: 800,
-            stockQuantity: 10,
-            createdAt: '2026-01-15T09:00:00.000Z',
-            updatedAt: '2026-01-15T09:00:00.000Z',
-            deactivatedAt: null,
-            categoryId: 1,
-            categoryName: 'Smartphones'
-        },
-        {
-            id: 2,
-            name: 'Samsung Galaxy S24',
-            description: 'Smartphone Samsung de gama alta con pantalla AMOLED y camara profesional',
-            price: 900,
-            stockQuantity: 9,
-            createdAt: '2026-01-20T09:00:00.000Z',
-            updatedAt: '2026-01-20T09:00:00.000Z',
-            deactivatedAt: null,
-            categoryId: 1,
-            categoryName: 'Smartphones'
-        },
-        {
-            id: 3,
-            name: 'MacBook Air M3',
-            description: 'Portatil ligero y potente con chip Apple M3, ideal para trabajo y estudio',
-            price: 1199,
-            stockQuantity: 50,
-            createdAt: '2026-02-03T09:00:00.000Z',
-            updatedAt: '2026-02-03T09:00:00.000Z',
-            deactivatedAt: null,
-            categoryId: 2,
-            categoryName: 'Ordenadores'
-        },
-        {
-            id: 4,
-            name: 'Dell XPS 15',
-            description: 'Portatil de alto rendimiento con pantalla de gran calidad y procesador Intel',
-            price: 1499,
-            stockQuantity: 33,
-            createdAt: '2026-02-10T09:00:00.000Z',
-            updatedAt: '2026-02-10T09:00:00.000Z',
-            deactivatedAt: null,
-            categoryId: 2,
-            categoryName: 'Ordenadores'
-        },
-        {
-            id: 5,
-            name: 'Sony WH-1000XM5',
-            description: 'Auriculares inalambricos con cancelacion de ruido y sonido de alta calidad',
-            price: 349,
-            stockQuantity: 7,
-            createdAt: '2026-03-01T09:00:00.000Z',
-            updatedAt: '2026-03-01T09:00:00.000Z',
-            deactivatedAt: null,
-            categoryId: 3,
-            categoryName: 'Auriculares'
-        },
-        {
-            id: 6,
-            name: 'Apple Watch Series 9',
-            description: 'Smartwatch con seguimiento de actividad fisica, salud y notificaciones',
-            price: 429,
-            stockQuantity: 12,
-            createdAt: '2026-03-12T09:00:00.000Z',
-            updatedAt: '2026-03-12T09:00:00.000Z',
-            deactivatedAt: null,
-            categoryId: 4,
-            categoryName: 'Smartwatches'
-        }
-    ];
+    productos: Producto[] = [];
 
-    constructor(private route: ActivatedRoute) { }
+    cargando = false;
+    private categoriasService = inject(CategoriaService);
+    private productoService = inject(ProductoService);
+    private messageService = inject(MessageService);
+    private route = inject(ActivatedRoute);
+
+    
 
     ngOnInit(): void {
+        
+        this.cargarProductos();
+        this.cargarCategorias();
         this.route.queryParamMap.subscribe(params => {
             this.categoriaSeleccionada = params.get('categoria');
             this.filtrarProductos();
+        });
+    }
+
+    cargarProductos(): void {
+        this.cargando = true;
+        this.productoService.getProducto().subscribe({
+            next: (data: Producto[]) => {
+                this.productos = data;
+                this.filtrarProductos(); // Corregido: se añaden los paréntesis ()
+                this.cargando = false;
+            },
+            error: (err: any) => {
+                this.cargando = false;
+                this.messageService.add({
+                    severity: 'error',
+                    summary: 'Error',
+                    detail: 'No se pudieron cargar los productos de la API.',
+                    life: 4000
+                });
+                console.error('Error al cargar productos', err);
+            }
+        });
+    }
+
+    cargarCategorias(): void {
+        this.categoriasService.getCategorias().subscribe({
+            next: (data: Categoria[]) => this.categorias = data,
+            error: (err: any) => console.error('Error al cargar categorías', err)
         });
     }
 
