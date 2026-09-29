@@ -1,0 +1,129 @@
+<header>
+    <p-menubar>
+        <ng-template pTemplate="start">
+            <app-header [title]="'Bienvenidos'"></app-header> 
+        </ng-template>
+        <ng-template pTemplate="end">
+            <p-button label="Categorias" icon="pi pi-tags" [text]="true" routerLink="/categorias"></p-button>
+        </ng-template>
+    </p-menubar>
+</header>
+
+<section>
+    <div class="p-card">
+
+        <!--
+            Alta y edicion de producto: un unico p-dialog modal para las dos
+            cosas.  
+
+            TODO PRUEBA - Cuando el dialog este terminado y funcionando,
+              repetir el mismo formulario como una tarjeta en esta misma
+              pantalla (un <div class="p-card"> con *ngIf="mostrarFormulario"
+              justo encima de la tabla, en lugar del p-dialog) para comparar
+              las dos formas y quedarse con la que convenza mas.
+
+            TODO 1.5 - Avisos de exito y error.
+            TODO 3.3 - Confirmar el borrado.
+            TODO 4.3 - Spinner mientras se carga (o [loading] en la p-table).
+        -->
+        <p-dialog [(visible)]="mostrarFormulario" [modal]="true" [style]="{ width: '32rem' }" [header]="productoEnEdicion ? 'Editar producto' : 'Alta de producto'" (onHide)="cerrarFormulario()">
+
+            <!--
+                Formulario de alta y edicion (1.2 y 1.3).
+
+                TODO 1.2 - Falta avisar de los errores: debajo de cada input,
+                  un <small> con *ngIf que pinte el mensaje que devuelva la
+                  validacion del .ts, y un ngClass que marque el input en rojo
+                  (PrimeNG usa las clases ng-invalid ng-dirty).
+                  OJO: los required / maxlength / min / max que hay en los
+                  inputs son atributos HTML.  maxlength impide teclear de mas y
+                  min/max acotan las flechitas, pero por si solos no avisan de
+                  nada al usuario.
+
+                TODO 4.1 - Pasarlo a reactivo: [formGroup] + formControlName y los Validators en el .ts.
+            -->
+            <div class="formulario-producto">
+
+                <div class="campo">
+                    <label for="name">Nombre *</label>
+                    <input id="name" name="name" type="text" pInputText [(ngModel)]="formulario.name" required maxlength="100">
+                </div>
+
+                <div class="campo">
+                    <label for="description">Descripcion</label>
+                    <textarea id="description" name="description" pInputTextarea rows="3" [(ngModel)]="formulario.description"></textarea>
+                </div>
+
+                <div class="campo">
+                    <label for="price">Precio (EUR) *</label>
+                    <!-- input nativo de tipo number a proposito: p-inputNumber
+                         recorta el valor cuando te sales de min/max, asi que
+                         nunca llegarias a ver el mensaje de error. -->
+                    <input id="price" name="price" type="number" pInputText step="0.01" min="0.01" max="1000000" [(ngModel)]="formulario.price" required>
+                </div>
+
+                <div class="campo">
+                    <label for="stockQuantity">Stock *</label>
+                    <input id="stockQuantity" name="stockQuantity" type="number" pInputText min="0" [(ngModel)]="formulario.stockQuantity" required>
+                </div>
+
+                <div class="campo">
+                    <label for="categoryId">Categoria *</label>
+                    <p-dropdown inputId="categoryId" name="categoryId" [options]="categorias" optionLabel="name" optionValue="id" placeholder="Elige una categoria" [(ngModel)]="formulario.categoryId" required appendTo="body"></p-dropdown>
+                </div>
+
+                <div class="pie-formulario">
+                    <p-button label="Cancelar" icon="pi pi-times" (onClick)="cerrarFormulario()"></p-button>
+                    <p-button [label]="productoEnEdicion ? 'Guardar cambios' : 'Crear producto'" icon="pi pi-check" (onClick)="guardar()"></p-button>
+                </div>
+
+            </div>
+
+        </p-dialog>
+
+        <div class="cabecera-listado">
+            <h2>Productos</h2>
+
+            <!-- TODO 0.4 - Boton "Refrescar" que llame a cargar() (opcion A). -->
+            <p-button label="Nuevo producto" icon="pi pi-plus" (onClick)="abrirAlta()"></p-button>
+
+        </div>
+
+        <!-- TODO 3.1 - Paginacion y [lazy] si se pagina en servidor. -->
+        <p-table [value]="productosFiltrados" [tableStyle]="{ 'min-width': '60rem' }">
+
+            <!-- TODO 3.2 - Ordenacion: pSortableColumn="name" en cada th, con <p-sortIcon>. -->
+            <ng-template pTemplate="header">
+                <tr>
+                    <th>Nombre</th>
+                    <th>Categoria</th>
+                    <th>Precio</th>
+                    <th>Stock</th>
+                    <!-- TODO 1.1 / 1.4 - Faltan en esta columna el botones Eliminar o similar. -->
+                    <th>Acciones</th>
+                </tr>
+            </ng-template>
+
+            <!-- TODO DIRECTIVAS - ngIf, ngFor etc -->
+            <ng-template pTemplate="body" let-producto>
+                <tr>
+                    <td>{{ producto.name }}</td>
+                    <td>{{ producto.categoryName }}</td>
+                    <td>{{ producto.price | currency:'EUR' }}</td>
+                    <td>
+                        <p-tag [value]="producto.stockQuantity + ' uds.'" [severity]="severidadStock(producto.stockQuantity)"></p-tag>
+                    </td>
+                    <td>
+                        <p-button icon="pi pi-pencil" title="Editar" (onClick)="abrirEdicion(producto)"></p-button>
+                    </td>
+                </tr>
+            </ng-template>
+
+            <ng-template pTemplate="emptymessage">
+                <tr>
+                    <td colspan="5">No hay productos para esta categoria.</td>
+                </tr>
+            </ng-template>
+        </p-table>
+    </div>
+</section>

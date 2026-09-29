@@ -1,0 +1,46 @@
+section {
+    padding: 1rem;
+}
+
+.cabecera-producto {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1rem;
+}
+
+.cabecera-producto h2 {
+    margin-bottom: 0.25rem;
+}
+
+.categoria {
+    color: var(--text-color-secondary);
+}
+
+.precio {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: var(--primary-color);
+}
+
+.descripcion {
+    margin: 1rem 0;
+}
+
+.datos {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 2rem;
+    margin-bottom: 1.5rem;
+}
+
+.dato {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+}
+
+.etiqueta {
+    font-size: 0.85rem;
+    color: var(--text-color-secondary);
+}

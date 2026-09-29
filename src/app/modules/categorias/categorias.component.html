@@ -1,0 +1,75 @@
+<header>
+    <p-menubar>
+        <ng-template pTemplate="start">
+            <app-header [title]="'Catalogo'"></app-header>
+        </ng-template>
+
+        <!-- TODO 0.3 - Boton que navegue a la pantalla de productos:
+             <ng-template pTemplate="end"> con un p-button y routerLink. -->
+    </p-menubar>
+</header>
+
+<section>
+
+    <!-- Presentacion de la pagina de inicio -->
+    <p-card styleClass="tarjeta-presentacion">
+        <h2>Nuestras categorias</h2>
+        <p class="presentacion">
+            Estos son los productos que tenemos disponibles, organizados por categoria.
+            Cada categoria muestra sus productos con el stock disponible,
+            y desde cada producto puedes entrar en el detalle para ver toda su informacion.
+        </p>
+        <div class="resumen">
+            <p-tag [value]="categorias.length + ' categorias'" icon="pi pi-tags" severity="info"></p-tag>
+            <p-tag [value]="productos.length + ' productos'" icon="pi pi-box" severity="success"></p-tag>
+        </div>
+    </p-card>
+
+    <div class="p-card tabla-catalogo">
+
+        <p-table [value]="productos" rowGroupMode="subheader" groupRowsBy="categoryName" [tableStyle]="{ 'min-width': '60rem' }">
+            <ng-template pTemplate="header">
+                <tr>
+                    <th>Producto</th>
+                    <th>Stock</th>
+                    <th></th>
+                </tr>
+            </ng-template>
+            <ng-template pTemplate="groupheader" let-producto>
+                <tr pRowGroupHeader class="fila-categoria">
+                    <td colspan="3">
+                        <div class="cabecera-categoria">
+                            
+                            <div class="datos-categoria">
+                                <span class="nombre-categoria">{{ producto.categoryName }}</span>
+                                <span class="descripcion-categoria">{{ getCategoria(producto.categoryName)?.description }}</span>
+                            </div>
+
+                            <p-tag [value]="numProductos(producto.categoryName) + ' productos'" severity="info"> </p-tag>
+
+                        </div>
+                    </td>
+                </tr>
+            </ng-template>
+            <ng-template pTemplate="body" let-producto let-rowIndex="rowIndex">
+                <tr class="fila-producto">
+                    <td>
+                        <span class="nombre-producto">{{ producto.name }}</span>
+                        <span class="descripcion-producto">{{ producto.description }}</span>
+                    </td>
+                    <td>
+                        <p-tag [value]="producto.stockQuantity + ' uds.'" [severity]="severidadStock(producto.stockQuantity)"></p-tag>
+                    </td>
+                    <td class="celda-acciones">
+                        <p-button label="Ver detalles" icon="pi pi-search" [text]="true" (onClick)="verDetalle(producto.id)"></p-button>
+                    </td>
+                </tr>
+            </ng-template>
+            <ng-template pTemplate="emptymessage">
+                <tr>
+                    <td colspan="3">No hay productos disponibles.</td>
+                </tr>
+            </ng-template>
+        </p-table>
+    </div>
+</section>

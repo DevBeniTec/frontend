@@ -1,0 +1,73 @@
+section {
+    padding: 1rem;
+}
+
+/* Presentacion */
+
+:host ::ng-deep .tarjeta-presentacion {
+    margin-bottom: 1rem;
+}
+
+.presentacion {
+    max-width: 60rem;
+    margin: 0.5rem 0 1rem;
+    color: var(--text-color-secondary);
+    line-height: 1.5;
+}
+
+.resumen {
+    display: flex;
+    gap: 0.5rem;
+}
+
+/* Cabecera de categoria (groupheader) */
+
+.fila-categoria {
+    background: var(--surface-100);
+}
+
+.cabecera-categoria {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.datos-categoria {
+    display: flex;
+    flex-direction: column;
+    margin-right: auto;
+}
+
+.nombre-categoria {
+    font-weight: 700;
+    font-size: 1.05rem;
+}
+
+.descripcion-categoria {
+    font-size: 0.85rem;
+    color: var(--text-color-secondary);
+}
+
+/* Productos: se muestran indentados y con una guia lateral
+   para que se vea que cuelgan de la categoria anterior. */
+
+.fila-producto > td:first-child {
+    border-left: 3px solid var(--primary-color);
+    padding-left: 2.5rem;
+}
+
+.celda-acciones {
+    width: 10rem;
+    text-align: right;
+}
+
+.nombre-producto {
+    display: block;
+    font-weight: 600;
+}
+
+.descripcion-producto {
+    display: block;
+    font-size: 0.85rem;
+    color: var(--text-color-secondary);
+}

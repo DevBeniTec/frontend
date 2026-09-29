@@ -1,0 +1,29 @@
+section {
+    padding: 1rem;
+}
+
+.cabecera-listado {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+}
+
+/* Formulario de alta / edicion del p-dialog */
+.campo {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+    margin-bottom: 1rem;
+}
+
+.campo label {
+    font-weight: 600;
+}
+
+.pie-formulario {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.5rem;
+    margin-top: 1.5rem;
+}

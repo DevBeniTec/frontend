@@ -1,0 +1,80 @@
+<header>
+    <p-menubar>
+        <ng-template pTemplate="start">
+            <app-header [title]="'Detalle del producto'"></app-header>
+        </ng-template>
+        <ng-template pTemplate="end">
+            <p-button label="Volver" icon="pi pi-arrow-left" [text]="true" routerLink="/categorias"></p-button>
+        </ng-template>
+    </p-menubar>
+</header>
+
+<section>
+
+    <div class="p-card" *ngIf="producto; else noEncontrado">
+
+        <div class="cabecera-producto">
+            <div>
+                <h2>{{ producto.name }}</h2>
+                <span class="categoria">{{ producto.categoryName }}</span>
+            </div>
+            <span class="precio">{{ producto.price | currency:'EUR' }}</span>
+        </div>
+
+        <p class="descripcion">{{ producto.description }}</p>
+
+        <div class="datos">
+            <div class="dato">
+                <span class="etiqueta">Categoria</span>
+                <p-tag [value]="producto.categoryName" severity="info"></p-tag>
+            </div>
+            <div class="dato">
+                <span class="etiqueta">Stock</span>
+                <p-tag [value]="producto.stockQuantity + ' unidades'" [severity]="severidadStock"></p-tag>
+            </div>
+            <div class="dato">
+                <span class="etiqueta">Estado</span>
+                <p-tag [value]="estaActivo ? 'Activo' : 'Dado de baja'" [severity]="estaActivo ? 'success' : 'danger'">
+                </p-tag>
+            </div>
+            <div class="dato">
+                <span class="etiqueta">Referencia</span>
+                <span>#{{ producto.id }}</span>
+            </div>
+        </div>
+
+        <h3>Informacion adicional</h3>
+        <div class="datos">
+            <div class="dato">
+                <span class="etiqueta">Alta</span>
+                <span>{{ producto.createdAt | date:'dd/MM/yyyy HH:mm' }}</span>
+            </div>
+            <div class="dato">
+                <span class="etiqueta">Ultima modificacion</span>
+                <span>{{ producto.updatedAt | date:'dd/MM/yyyy HH:mm' }}</span>
+            </div>
+            <div class="dato" *ngIf="producto.deactivatedAt">
+                <span class="etiqueta">Baja</span>
+                <span>{{ producto.deactivatedAt | date:'dd/MM/yyyy HH:mm' }}</span>
+            </div>
+        </div>
+    </div>
+
+    <!--
+        TODO 1.1 - Diferenciar el 404 ("el producto no existe") del fallo de
+        conexion ("no se ha podido contactar con el servidor"): hoy solo hay
+        un mensaje para los dos casos.
+        TODO 1.4 (opcional) - Botones de dar de baja / reactivar, contra
+        POST /api/products/deactivate/{id} y /reactivate/{id}; el estado
+        "Activo / Dado de baja" ya se pinta mas arriba.
+        TODO 4.3 - Spinner mientras llega la respuesta.
+    -->
+    <ng-template #noEncontrado>
+        <div class="p-card">
+            <h2>Producto no encontrado</h2>
+            <p>El producto que buscas no existe o ha sido eliminado.</p>
+            <p-button label="Categorias" icon="pi pi-tags" [text]="true" routerLink="/categorias"></p-button>
+        </div>
+    </ng-template>
+
+</section>
