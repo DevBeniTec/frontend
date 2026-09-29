@@ -35,4 +35,33 @@ export class ProductoService {
     obtenerPorId(id: number): Observable<Producto> {
         return this.http.get<Producto>(`${this.apiUrl}/${id}`);
     }
+
+    crear(producto: {
+    name: string;
+    description: string;
+    price: number;
+    stockQuantity: number;
+    categoryId: number;
+    }): Observable<any> {
+        return this.http.post(
+            this.apiUrl,
+            producto,
+            { observe: 'response' }
+        );
+    }       
+    
+    actualizar(producto: {
+        id: number;
+        name: string;
+        description: string;
+        price: number;
+        stockQuantity: number;
+        categoryId: number;
+    }): Observable<any> {
+        return this.http.put(
+            `${this.apiUrl}/${producto.id}`,
+            producto,
+            { observe: 'response' }
+        );
+    }
 }

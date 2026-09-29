@@ -12,6 +12,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { ProductoService } from './producto.service';
+import { CategoriaService } from '../categorias/categorias.service';
 
 /*
  * =====================================================================
@@ -112,19 +113,10 @@ export class ProductoComponent implements OnInit {
     /* Modelo al que se atan los ngModel del dialog. */
     formulario: FormularioProducto = this.formularioVacio();
 
-    /*
-     * TODO 0.2 - Categorias escritas a mano para que el desplegable tenga
-     *   algo que ofrecer.  Cuando exista el servicio hay que traerlas de
-     *   GET /api/categories (son las mismas que pinta categorias.component).
-     */
+    intentoGuardar = false;  // para mostrar errores de validacion solo tras pulsar Guardar
+    erroresApi: { [campo: string]: string[] } = {};
 
-
-    categorias: Categoria[] = [
-        { id: 1, name: 'Smartphones' },
-        { id: 2, name: 'Ordenadores' },
-        { id: 3, name: 'Auriculares' },
-        { id: 4, name: 'Smartwatches' }
-    ];
+    categorias: Categoria[] = [];
 
     // TODO 4.3 - Indicador de carga: una propiedad "cargando" que se pone a
     //   true antes de suscribirse y a false en el next Y en el error; se ata
@@ -157,11 +149,25 @@ export class ProductoComponent implements OnInit {
     productos: Producto[] = [];
 
     constructor(private route: ActivatedRoute,
-        private productoService: ProductoService
+        private productoService: ProductoService,
+        private categoriaService: CategoriaService
+
     ) { }
+
+    cargarCategorias(): void {
+    this.categoriaService.listar().subscribe({
+        next: (categorias) => {
+            this.categorias = categorias;
+        },
+        error: (error) => {
+            console.error('Error al cargar las categorías:', error);
+        }
+    });
+}
 
     ngOnInit(): void {
     this.cargar();   
+    this.cargarCategorias();  // carga las categorías al iniciar el componente
 
         this.route.queryParamMap.subscribe(params => {
             this.categoriaSeleccionada = params.get('categoria');
@@ -193,6 +199,8 @@ export class ProductoComponent implements OnInit {
     abrirAlta(): void {
         this.productoEnEdicion = null;
         this.formulario = this.formularioVacio();
+        this.intentoGuardar = false;
+        this.erroresApi = {};
         this.mostrarFormulario = true;
     }
 
@@ -208,6 +216,8 @@ export class ProductoComponent implements OnInit {
             stockQuantity: producto.stockQuantity,
             categoryId: producto.categoryId
         };
+        this.intentoGuardar = false;
+        this.erroresApi = {};
         this.mostrarFormulario = true;
     }
 
@@ -215,6 +225,8 @@ export class ProductoComponent implements OnInit {
         this.mostrarFormulario = false;
         this.productoEnEdicion = null;
         this.formulario = this.formularioVacio();
+        this.intentoGuardar = false;
+        this.erroresApi = {};
     }
 
     /*
@@ -232,26 +244,101 @@ export class ProductoComponent implements OnInit {
      */
 
     /** Se dispara con el boton Guardar del dialog. */
-    guardar(): void {
-        /*
-         * TODO 1.2 / 1.3 - Validar aqui lo primero: si algo falla, destapar
-         *   los mensajes de error y salir SIN llamar a la API, asi evitamos llamadas innecesarias.
-         */
 
-        /*
-         * TODO 1.2 / 1.3 - Llamada a la API.
-         *   Alta     (this.productoEnEdicion === null):
-         *     POST /api/products con this.formulario tal cual.
-         *   Modificacion:
-         *     PUT /api/products/{id} con { id: this.productoEnEdicion.id,
-         *     ...this.formulario }; el id del cuerpo DEBE coincidir con el
-         *     de la ruta o la API responde 400.
-         *   En el next: cerrarFormulario(), cargar() para refrescar la tabla
-         *   (0.4) y toast de exito (1.5).
-         *   En el error: NO cerrar el dialog; si el 400 trae
-         *   { errors: { Name: [...] } }, pintar cada mensaje en su campo.
-         */
+    validarFormulario(): boolean {
+        const nombreValido =
+            !!this.formulario.name &&
+            this.formulario.name.trim().length > 0 &&
+            this.formulario.name.length <= 100;
+
+        const precioValido =
+            this.formulario.price !== null &&
+            this.formulario.price >= 0.01 &&
+            this.formulario.price <= 1000000;
+
+        const stockValido =
+            this.formulario.stockQuantity !== null &&
+            this.formulario.stockQuantity >= 0;
+
+        const categoriaValida =
+            this.formulario.categoryId !== null;
+
+        return nombreValido &&
+            precioValido &&
+            stockValido &&
+            categoriaValida;
     }
+
+    guardar(): void {
+    this.intentoGuardar = true;
+    this.erroresApi = {};
+
+    if (!this.validarFormulario()) {
+        return;
+    }
+
+    const producto = {
+        name: this.formulario.name.trim(),
+        description: this.formulario.description,
+        price: this.formulario.price!,
+        stockQuantity: this.formulario.stockQuantity!,
+        categoryId: this.formulario.categoryId!
+    };
+
+    if (this.productoEnEdicion === null) {
+
+        // ALTA = POST
+        this.productoService.crear(producto).subscribe({
+            next: (respuesta) => {
+                console.log('Producto creado:', respuesta);
+                console.log(
+                    'Location:',
+                    respuesta.headers.get('Location')
+                );
+
+                this.cerrarFormulario();
+                this.cargar();
+            },
+
+            error: (error) => {
+                console.error('Error al crear producto:', error);
+
+                if (error.status === 400 && error.error?.errors) {
+                    this.erroresApi = error.error.errors;
+                }
+            }
+        });
+
+    } else {
+
+        // PUT
+        const productoActualizado = {
+            id: this.productoEnEdicion.id,
+            ...producto
+        };
+
+        this.productoService.actualizar(productoActualizado).subscribe({
+            next: () => {
+                console.log(
+                    'Producto actualizado:',
+                    productoActualizado
+                );
+
+                this.cerrarFormulario();
+                this.cargar();
+            },
+
+            error: (error) => {
+                console.error('Error al actualizar producto:', error);
+
+                if (error.status === 400 && error.error?.errors) {
+                    this.erroresApi = error.error.errors;
+                }
+            }
+        });
+    }
+    }
+    
 
     /*
      * TODO 0.4 - Refresco de la tabla.  Metodo cargar() que vuelve a pedir

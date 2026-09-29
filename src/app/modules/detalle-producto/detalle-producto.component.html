@@ -70,15 +70,6 @@
         "Activo / Dado de baja" ya se pinta mas arriba.
         TODO 4.3 - Spinner mientras llega la respuesta.
     -->
-    <ng-template #noEncontrado>
-       
-        
-         <div class="p-card">
-            <h2>Producto no encontrado</h2>
-            <p>El producto que buscas no existe o ha sido eliminado.</p>
-            <p-button label="Categorias" icon="pi pi-tags" [text]="true" routerLink="/categorias"></p-button>
-         </div>
-    </ng-template>
 
      <!-- Producto no encontrado: HTTP 404 --> 
         <div class="p-card" *ngIf="noEncontrado"> 
