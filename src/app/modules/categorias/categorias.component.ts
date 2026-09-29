@@ -67,104 +67,10 @@ interface Producto {
 })
 export class CategoriasComponent implements OnInit {
 
-    categorias: Categoria[] = [
-        {
-            id: 1,
-            name: 'Smartphones',
-            description: 'Telefonos moviles de ultima generacion'
-        },
-        {
-            id: 2,
-            name: 'Ordenadores',
-            description: 'Portatiles y equipos de sobremesa para trabajo y estudio'
-        },
-        {
-            id: 3,
-            name: 'Auriculares',
-            description: 'Auriculares con y sin cable, con cancelacion de ruido'
-        },
-        {
-            id: 4,
-            name: 'Smartwatches',
-            description: 'Relojes inteligentes con seguimiento de actividad y salud'
-        }
-    ];
+    categorias: Categoria[] = [];
 
     /** Filas de la tabla: la propia p-table las agrupa por categoryName. */
-    productos: Producto[] = [
-        {
-            id: 1,
-            name: 'iPhone 15',
-            description: 'Smartphone de Apple Super Retina XDR',
-            price: 800,
-            stockQuantity: 10,
-            createdAt: '2026-01-15T09:00:00.000Z',
-            updatedAt: '2026-01-15T09:00:00.000Z',
-            deactivatedAt: null,
-            categoryId: 1,
-            categoryName: 'Smartphones'
-        },
-        {
-            id: 2,
-            name: 'Samsung Galaxy S24',
-            description: 'Smartphone Samsung de gama alta con pantalla AMOLED y camara profesional',
-            price: 900,
-            stockQuantity: 9,
-            createdAt: '2026-01-20T09:00:00.000Z',
-            updatedAt: '2026-01-20T09:00:00.000Z',
-            deactivatedAt: null,
-            categoryId: 1,
-            categoryName: 'Smartphones'
-        },
-        {
-            id: 3,
-            name: 'MacBook Air M3',
-            description: 'Portatil ligero y potente con chip Apple M3, ideal para trabajo y estudio',
-            price: 1199,
-            stockQuantity: 50,
-            createdAt: '2026-02-03T09:00:00.000Z',
-            updatedAt: '2026-02-03T09:00:00.000Z',
-            deactivatedAt: null,
-            categoryId: 2,
-            categoryName: 'Ordenadores'
-        },
-        {
-            id: 4,
-            name: 'Dell XPS 15',
-            description: 'Portatil de alto rendimiento con pantalla de gran calidad y procesador Intel',
-            price: 1499,
-            stockQuantity: 33,
-            createdAt: '2026-02-10T09:00:00.000Z',
-            updatedAt: '2026-02-10T09:00:00.000Z',
-            deactivatedAt: null,
-            categoryId: 2,
-            categoryName: 'Ordenadores'
-        },
-        {
-            id: 5,
-            name: 'Sony WH-1000XM5',
-            description: 'Auriculares inalambricos con cancelacion de ruido y sonido de alta calidad',
-            price: 349,
-            stockQuantity: 7,
-            createdAt: '2026-03-01T09:00:00.000Z',
-            updatedAt: '2026-03-01T09:00:00.000Z',
-            deactivatedAt: null,
-            categoryId: 3,
-            categoryName: 'Auriculares'
-        },
-        {
-            id: 6,
-            name: 'Apple Watch Series 9',
-            description: 'Smartwatch con seguimiento de actividad fisica, salud y notificaciones',
-            price: 429,
-            stockQuantity: 12,
-            createdAt: '2026-03-12T09:00:00.000Z',
-            updatedAt: '2026-03-12T09:00:00.000Z',
-            deactivatedAt: null,
-            categoryId: 4,
-            categoryName: 'Smartwatches'
-        }
-    ];
+    productos: Producto[] = [];
 
     /**
      * Grupos desplegados de la tabla, indexados por nombre de categoria.

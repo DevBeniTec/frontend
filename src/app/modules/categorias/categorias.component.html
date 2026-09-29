@@ -4,6 +4,10 @@
             <app-header [title]="'Catalogo'"></app-header>
         </ng-template>
 
+
+        <ng-template pTemplate="end">
+            <p-button label="Productos" icon="pi pi-tags" [text]="true" routerLink="/productos"></p-button>
+        </ng-template>
         <!-- TODO 0.3 - Boton que navegue a la pantalla de productos:
              <ng-template pTemplate="end"> con un p-button y routerLink. -->
     </p-menubar>

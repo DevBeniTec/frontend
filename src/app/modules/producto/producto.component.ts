@@ -71,7 +71,7 @@ export interface Categoria {
    API en POST y PUT: el id, las fechas y categoryName los pone el servidor.
    Los numericos arrancan a null para que el input salga vacio en el alta en
    lugar de con un 0. */
-interface FormularioProducto {
+export interface FormularioProducto {
     name: string;
     description: string;
     price: number | null;
@@ -101,6 +101,7 @@ interface FormularioProducto {
   styleUrl: './producto.component.css'
 })
 export class ProductoComponent implements OnInit {
+
 
     productosFiltrados: Producto[] = [];
     categoriaSeleccionada: string | null = null;
@@ -138,6 +139,7 @@ export class ProductoComponent implements OnInit {
     productos: Producto[] = [];
 
     cargando = false;
+    intentoGuardar=false;
     private categoriasService = inject(CategoriaService);
     private productoService = inject(ProductoService);
     private messageService = inject(MessageService);
@@ -246,7 +248,29 @@ export class ProductoComponent implements OnInit {
      */
 
     /** Se dispara con el boton Guardar del dialog. */
+
+    private esFormularioValido(): boolean
+    {
+        const f = this.formulario;
+
+        if(!f.name || f.name.trim().length === 0 || f.name.length>100)
+            return false;
+
+        if (f.price=== null || f.price<0.01 || f.price > 1000000)
+            return false ;
+
+        if (f.stockQuantity === null || f.stockQuantity<0)
+            return false;
+
+        if (f.categoryId === null)
+            return false;
+
+        return true;
+    }
+
     guardar(): void {
+       
+        
         /*
          * TODO 1.2 / 1.3 - Validar aqui lo primero: si algo falla, destapar
          *   los mensajes de error y salir SIN llamar a la API, asi evitamos llamadas innecesarias.
@@ -265,6 +289,43 @@ export class ProductoComponent implements OnInit {
          *   En el error: NO cerrar el dialog; si el 400 trae
          *   { errors: { Name: [...] } }, pintar cada mensaje en su campo.
          */
+
+         this.intentoGuardar=true;
+
+        if(! this.esFormularioValido())
+        {
+            this.messageService.add({
+                severity: 'warn',
+                summary: 'Formulario Incompleto',
+                detail: 'Revisa los campos',
+                life: 4000
+            });
+            return;
+        }
+
+        this.productoService.crearProducto(this.formulario).subscribe({
+      next: () => {
+        this.cerrarFormulario();
+        this.cargarProductos(); // Refresca la tabla
+        this.messageService.add({
+          severity: 'success',
+          summary: 'Producto creado',
+          detail: 'El producto se ha registrado correctamente.',
+          life: 4000
+        });
+      },
+      error: (err: any) => {
+        // En error NO cerramos el modal para no perder lo escrito
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Error al crear',
+          detail: 'No se pudo guardar el producto en el servidor.',
+          life: 4000
+        });
+        console.error('Error POST:', err);
+      }
+    });
+            
     }
 
     /*
