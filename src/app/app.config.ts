@@ -17,8 +17,6 @@ export const appConfig: ApplicationConfig = {
     provideRouter(routes, withComponentInputBinding()),
     { provide: LOCALE_ID, useValue: 'es-ES' },
     provideAnimationsAsync(),
-
-    // TODO 0.2 - Habilitar HttpClient para poder llamar a la API:
-    
+    provideHttpClient(), /*Habilitar HttpClient para que angular pueda utilizarlo y realizar peticiones  HTTP a la API:*/
   ]
 };

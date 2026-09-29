@@ -82,12 +82,25 @@
         </p-dialog>
 
         <div class="cabecera-listado">
-            <h2>Productos</h2>
+        <h2>Productos</h2>
 
-            <!-- TODO 0.4 - Boton "Refrescar" que llame a cargar() (opcion A). -->
-            <p-button label="Nuevo producto" icon="pi pi-plus" (onClick)="abrirAlta()"></p-button>
+        <div>
+            <p-button
+            label="Refrescar"
+            icon="pi pi-refresh"
+            [text]="true"
+            (onClick)="cargar()">
+            </p-button>
 
+        <p-button
+            label="Nuevo producto"
+            icon="pi pi-plus"
+            (onClick)="abrirAlta()">
+        </p-button>
         </div>
+    </div>
+
+
 
         <!-- TODO 3.1 - Paginacion y [lazy] si se pagina en servidor. -->
         <p-table [value]="productosFiltrados" [tableStyle]="{ 'min-width': '60rem' }">

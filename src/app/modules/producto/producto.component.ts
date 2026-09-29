@@ -11,6 +11,8 @@ import { DropdownModule } from 'primeng/dropdown'
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, RouterLink } from '@angular/router';
+import { ProductoService } from '../../services/producto.service';
+import { Producto } from '../../models/producto.model';
 
 /*
  * =====================================================================
@@ -45,18 +47,7 @@ import { ActivatedRoute, RouterLink } from '@angular/router';
 /* Pendiente: la imagen del producto (imageUrl) se ha dejado fuera de momento.
    No esta descartada; si se retoma hay que anadirla en los tres componentes
    (producto, categorias y detalle-producto) y en el modelo del backend. */
-interface Producto {
-    id: number;
-    name: string;
-    description: string;
-    price: number;
-    stockQuantity: number;
-    createdAt: string;
-    updatedAt: string;
-    deactivatedAt: string | null;
-    categoryId: number;
-    categoryName: string;
-}
+
 
 /* Lo que se puede elegir en el desplegable de categoria del formulario. */
 interface Categoria {
@@ -98,6 +89,7 @@ interface FormularioProducto {
 })
 export class ProductoComponent implements OnInit {
 
+    productos: Producto[] = [];
     productosFiltrados: Producto[] = [];
     categoriaSeleccionada: string | null = null;
 
@@ -126,99 +118,30 @@ export class ProductoComponent implements OnInit {
     // TODO 4.3 - Indicador de carga: una propiedad "cargando" que se pone a
     //   true antes de suscribirse y a false en el next Y en el error; se ata
     //   al [loading] de la p-table o a un p-progressSpinner con *ngIf.
-
-    /*
-     * TODO 0.2 - Estos productos estan escritos a mano solo para que la
-     *   pantalla pinte algo.  Hay que borrarlos y traerlos de la API:
-     *     - crear ProductoService con listar(): Observable<Producto[]>
-     *       -> this.http.get<Producto[]>('http://localhost:2502/api/products')
-     *     - inyectarlo aqui y rellenar this.productos en un metodo cargar()
-     *       llamado desde ngOnInit.
-     *   La interfaz Producto de arriba ya coincide con lo que devuelve la API.
-     */
-    productos: Producto[] = [
-        {
-            id: 1,
-            name: 'iPhone 15',
-            description: 'Smartphone de Apple Super Retina XDR',
-            price: 800,
-            stockQuantity: 10,
-            createdAt: '2026-01-15T09:00:00.000Z',
-            updatedAt: '2026-01-15T09:00:00.000Z',
-            deactivatedAt: null,
-            categoryId: 1,
-            categoryName: 'Smartphones'
-        },
-        {
-            id: 2,
-            name: 'Samsung Galaxy S24',
-            description: 'Smartphone Samsung de gama alta con pantalla AMOLED y camara profesional',
-            price: 900,
-            stockQuantity: 9,
-            createdAt: '2026-01-20T09:00:00.000Z',
-            updatedAt: '2026-01-20T09:00:00.000Z',
-            deactivatedAt: null,
-            categoryId: 1,
-            categoryName: 'Smartphones'
-        },
-        {
-            id: 3,
-            name: 'MacBook Air M3',
-            description: 'Portatil ligero y potente con chip Apple M3, ideal para trabajo y estudio',
-            price: 1199,
-            stockQuantity: 50,
-            createdAt: '2026-02-03T09:00:00.000Z',
-            updatedAt: '2026-02-03T09:00:00.000Z',
-            deactivatedAt: null,
-            categoryId: 2,
-            categoryName: 'Ordenadores'
-        },
-        {
-            id: 4,
-            name: 'Dell XPS 15',
-            description: 'Portatil de alto rendimiento con pantalla de gran calidad y procesador Intel',
-            price: 1499,
-            stockQuantity: 33,
-            createdAt: '2026-02-10T09:00:00.000Z',
-            updatedAt: '2026-02-10T09:00:00.000Z',
-            deactivatedAt: null,
-            categoryId: 2,
-            categoryName: 'Ordenadores'
-        },
-        {
-            id: 5,
-            name: 'Sony WH-1000XM5',
-            description: 'Auriculares inalambricos con cancelacion de ruido y sonido de alta calidad',
-            price: 349,
-            stockQuantity: 7,
-            createdAt: '2026-03-01T09:00:00.000Z',
-            updatedAt: '2026-03-01T09:00:00.000Z',
-            deactivatedAt: null,
-            categoryId: 3,
-            categoryName: 'Auriculares'
-        },
-        {
-            id: 6,
-            name: 'Apple Watch Series 9',
-            description: 'Smartwatch con seguimiento de actividad fisica, salud y notificaciones',
-            price: 429,
-            stockQuantity: 12,
-            createdAt: '2026-03-12T09:00:00.000Z',
-            updatedAt: '2026-03-12T09:00:00.000Z',
-            deactivatedAt: null,
-            categoryId: 4,
-            categoryName: 'Smartwatches'
-        }
-    ];
-
-    constructor(private route: ActivatedRoute) { }
+   
+    constructor(
+    private route: ActivatedRoute,
+    private productoService: ProductoService
+    ){ }
 
     ngOnInit(): void {
-        this.route.queryParamMap.subscribe(params => {
-            this.categoriaSeleccionada = params.get('categoria');
-            this.filtrarProductos();
-        });
+    this.route.queryParamMap.subscribe(params => {
+        this.categoriaSeleccionada = params.get('categoria');
+        this.cargar(); //Carga los productos directamente desde la api 
+    });
+}
+
+    cargar(): void {
+        this.productoService.listar().subscribe({
+            next: (productos) => {
+        this.productos = productos;
+        this.filtrarProductos();
+    },
+    error: (error) => {
+        console.error('Error al cargar los productos', error);
     }
+  });
+}
 
     /* La copia con [...] no sobra: la p-table ordena in situ el array que
        recibe en [value], asi que en cuanto se active la ordenacion por
