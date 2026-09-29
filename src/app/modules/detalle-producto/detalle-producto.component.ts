@@ -6,22 +6,13 @@ import { MenubarModule } from 'primeng/menubar';
 import { TagModule } from 'primeng/tag';
 import { CardModule } from 'primeng/card';
 import { HeaderComponent } from '../../components/header/header.component';
+import { ProductoService, Producto } from '../producto/producto.service';
+
 
 /* Pendiente: la imagen del producto (imageUrl) se ha dejado fuera de momento.
    No esta descartada; si se retoma hay que anadirla en los tres componentes
    (producto, categorias y detalle-producto) y en el modelo del backend. */
-interface Producto {
-    id: number;
-    name: string;
-    description: string;
-    price: number;
-    stockQuantity: number;
-    createdAt: string;
-    updatedAt: string;
-    deactivatedAt: string | null;
-    categoryId: number;
-    categoryName: string;
-}
+
 
 @Component({
   selector: 'app-detalle-producto',
@@ -42,6 +33,9 @@ export class DetalleProductoComponent implements OnInit {
 
     producto?: Producto;
 
+    noEncontrado = false;
+    errorConexion = false;
+
     /*
      * TODO 1.1 - Detalle de producto (ver docs/actividades.txt).
      *   Esta lista escrita a mano tiene que desaparecer: el detalle se pide a
@@ -57,90 +51,37 @@ export class DetalleProductoComponent implements OnInit {
      *   Directivas: *ngIf con else para elegir entre detalle, "no encontrado"
      *   y error de conexion.
      */
-    productos: Producto[] = [
-        {
-            id: 1,
-            name: 'iPhone 15',
-            description: 'Smartphone de Apple Super Retina XDR',
-            price: 800,
-            stockQuantity: 10,
-            createdAt: '2026-01-15T09:00:00.000Z',
-            updatedAt: '2026-01-15T09:00:00.000Z',
-            deactivatedAt: null,
-            categoryId: 1,
-            categoryName: 'Smartphones'
-        },
-        {
-            id: 2,
-            name: 'Samsung Galaxy S24',
-            description: 'Smartphone Samsung de gama alta con pantalla AMOLED y camara profesional',
-            price: 900,
-            stockQuantity: 9,
-            createdAt: '2026-01-20T09:00:00.000Z',
-            updatedAt: '2026-01-20T09:00:00.000Z',
-            deactivatedAt: null,
-            categoryId: 1,
-            categoryName: 'Smartphones'
-        },
-        {
-            id: 3,
-            name: 'MacBook Air M3',
-            description: 'Portatil ligero y potente con chip Apple M3, ideal para trabajo y estudio',
-            price: 1199,
-            stockQuantity: 50,
-            createdAt: '2026-02-03T09:00:00.000Z',
-            updatedAt: '2026-02-03T09:00:00.000Z',
-            deactivatedAt: null,
-            categoryId: 2,
-            categoryName: 'Ordenadores'
-        },
-        {
-            id: 4,
-            name: 'Dell XPS 15',
-            description: 'Portatil de alto rendimiento con pantalla de gran calidad y procesador Intel',
-            price: 1499,
-            stockQuantity: 33,
-            createdAt: '2026-02-10T09:00:00.000Z',
-            updatedAt: '2026-02-10T09:00:00.000Z',
-            deactivatedAt: null,
-            categoryId: 2,
-            categoryName: 'Ordenadores'
-        },
-        {
-            id: 5,
-            name: 'Sony WH-1000XM5',
-            description: 'Auriculares inalambricos con cancelacion de ruido y sonido de alta calidad',
-            price: 349,
-            stockQuantity: 7,
-            createdAt: '2026-03-01T09:00:00.000Z',
-            updatedAt: '2026-03-01T09:00:00.000Z',
-            deactivatedAt: null,
-            categoryId: 3,
-            categoryName: 'Auriculares'
-        },
-        {
-            id: 6,
-            name: 'Apple Watch Series 9',
-            description: 'Smartwatch con seguimiento de actividad fisica, salud y notificaciones',
-            price: 429,
-            stockQuantity: 12,
-            createdAt: '2026-03-12T09:00:00.000Z',
-            updatedAt: '2026-03-12T09:00:00.000Z',
-            deactivatedAt: null,
-            categoryId: 4,
-            categoryName: 'Smartwatches'
-        }
-    ];
 
     constructor(
         private route: ActivatedRoute,
         private router: Router,
+        private productoService: ProductoService
     ) { }
 
     ngOnInit(): void {
         this.route.paramMap.subscribe(params => {
             const id = Number(params.get('id'));
-            this.producto = this.productos.find(producto => producto.id === id);
+            
+            this.productoService.obtenerPorId(id).subscribe({
+                 next: (producto) => { 
+                    this.producto = producto;
+                    this.noEncontrado = false;
+                    this.errorConexion = false;
+                }, 
+                error: (error) => {
+                    console.error('Error al obtener el producto:', error);
+
+                    this.producto = undefined;
+
+                    if (error.status === 404) {
+                        this.noEncontrado = true;
+                        this.errorConexion = false;
+                    } else if (error.status === 0) {
+                        this.noEncontrado = false;
+                        this.errorConexion = true;
+                    }
+                } 
+            });
         });
 
     }

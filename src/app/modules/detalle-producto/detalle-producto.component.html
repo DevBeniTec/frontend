@@ -10,8 +10,9 @@
 </header>
 
 <section>
-
-    <div class="p-card" *ngIf="producto; else noEncontrado">
+    <!-- Producto encontrado --> 
+     <div class="p-card" *ngIf="producto && !errorConexion">
+    <!--<div class="p-card" *ngIf="producto; else noEncontrado"> -->
 
         <div class="cabecera-producto">
             <div>
@@ -70,11 +71,28 @@
         TODO 4.3 - Spinner mientras llega la respuesta.
     -->
     <ng-template #noEncontrado>
-        <div class="p-card">
+       
+        
+         <div class="p-card">
             <h2>Producto no encontrado</h2>
             <p>El producto que buscas no existe o ha sido eliminado.</p>
             <p-button label="Categorias" icon="pi pi-tags" [text]="true" routerLink="/categorias"></p-button>
-        </div>
+         </div>
     </ng-template>
+
+     <!-- Producto no encontrado: HTTP 404 --> 
+        <div class="p-card" *ngIf="noEncontrado"> 
+            <h2>Producto no encontrado</h2> 
+            <p> El producto que buscas no existe o ha sido eliminado. </p> 
+            <p-button label="Categorias" icon="pi pi-tags" [text]="true" routerLink="/categorias"> </p-button> 
+            <p-button label="Todos los productos" icon="pi pi-box" [text]="true" routerLink="/productos"> </p-button> 
+        </div> 
+
+        <!-- Error de conexión --> 
+         <div class="p-card" *ngIf="errorConexion"> 
+            <h2>No se puede conectar con el servidor</h2>
+            <p> No se ha podido contactar con la API. Comprueba que el servidor esté funcionando e inténtalo de nuevo. </p> 
+            <p-button label="Volver a categorías" icon="pi pi-tags" [text]="true" routerLink="/categorias"> </p-button> 
+        </div>
 
 </section>
